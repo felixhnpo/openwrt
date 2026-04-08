@@ -1,0 +1,106 @@
+name: Build RTD129x OpenWrt
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 600
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Checkout OpenWrt
+        run: |
+          git remote add upstream https://github.com/openwrt/openwrt.git || true
+          git fetch upstream
+          git checkout -B openwrt-25.12 upstream/openwrt-25.12
+
+      - name: Apply RTD129x patches
+        run: |
+          git checkout main -- target/linux/rtd129x || true
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential clang flex bison g++ gcc gettext \
+            libncurses-dev libssl-dev python3 rsync subversion unzip zlib1g-dev \
+            file patch texinfo bc git-core ccache libgcc1
+
+      - name: Prepare Build
+        run: |
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+
+      - name: Configure
+        env:
+          CONFIG_TARGET_rtd129x=y
+          CONFIG_TARGET_rtd129x_armv8=y
+          CONFIG_TARGET_BOARD="rtd129x"
+          CONFIG_SUBTARGET="armv8"
+          CONFIG_ARCH="aarch64"
+        run: |
+          cat << 'CONFIG' > .config
+CONFIG_TARGET_rtd129x=y
+CONFIG_TARGET_rtd129x_armv8=y
+CONFIG_TARGET_BOARD="rtd129x"
+CONFIG_SUBTARGET="armv8"
+CONFIG_ARCH="aarch64"
+CONFIG_ARCH_AARCH64=y
+CONFIG_ARCH_AARCH64_NEEDS_32BIT_USERSPACE=y
+CONFIG_HAS_ARM_V8=y
+CONFIG_HAS_FPU=y
+CONFIG_HAS_MODULES=y
+CONFIG_HAS_USB=y
+CONFIG_HAVE_DOT_CONFIG=y
+CONFIG_LINUX_6_12=y
+CONFIG_OPENWRT=y
+CONFIG_TARGET_DEVICES=y
+CONFIG_VERSIONOPT=y
+CONFIG_VERSION_DIST="OpenWrt"
+CONFIG_VERSION_MANUFACTURER="openwrt.org"
+CONFIG_LIBC="glibc"
+CONFIG_GCC_USE_VERSION_13=y
+CONFIG_PKG_ABI_VERSION="3"
+CONFIG_TARGET_rtd129x_DEVICE_linkease_easepi-ars2=y
+CONFIG_PACKAGE_blkid=y
+CONFIG_PACKAGE_blockdev=y
+CONFIG_PACKAGE_e2fsprogs=y
+CONFIG_PACKAGE_f2fsck=y
+CONFIG_PACKAGE_mkf2fs=y
+CONFIG_PACKAGE_kmod-scsi-core=y
+CONFIG_PACKAGE_kmod-lib-crc16=y
+CONFIG_PACKAGE_kmod-crypto-hash=y
+CONFIG_PACKAGE_kmod-gpio-button-hotplug=y
+CONFIG_PACKAGE_kmod-nls-base=y
+CONFIG_PACKAGE_kmod-usb-core=y
+CONFIG_PACKAGE_kmod-usb-ohci=y
+CONFIG_PACKAGE_kmod-usb2=y
+CONFIG_PACKAGE_kmod-usb3=y
+CONFIG_PACKAGE_kmod-r8169=y
+CONFIG_PACKAGE_partx-utils=y
+CONFIG_PACKAGE_uboot-envtools=y
+CONFIG_TARGET_ROOTFS_PARTSIZE=300
+CONFIG_TARGET_ROOTFS_SQUASHFS=y
+CONFIG_TARGET_SQUASHFS_BLOCK_SIZE=256
+CONFIG_TARGET_KERNEL_PARTSIZE=32
+CONFIG_TARGET_IMAGE_SIZE=524288
+CONFIG
+
+      - name: Build
+        run: |
+          make defconfig
+          make -j$(nproc) world 2>&1 | tail -100
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: openwrt-rtd129x-artifacts
+          path: |
+            bin/targets/rtd129x/armv8/
+          retention-days: 7
