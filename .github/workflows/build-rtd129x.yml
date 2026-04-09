@@ -99,8 +99,7 @@ jobs:
       - name: List build output
         run: |
           echo "=== Images ==="
-          ls -la bin/targets/rtd129x/armv8/*.img* 2>/dev/null || true
-          ls -la bin/targets/rtd129x/armv8/*.tar* 2>/dev/null || true
+          ls -la bin/targets/rtd129x/armv8/ 2>/dev/null || true
           echo "=== Checksums ==="
           cat bin/targets/rtd129x/armv8/sha256sums 2>/dev/null || true
 
@@ -109,6 +108,7 @@ jobs:
         with:
           name: openwrt-rtd129x-firmware
           path: |
+            bin/targets/rtd129x/armv8/*.bin*
             bin/targets/rtd129x/armv8/*.img*
             bin/targets/rtd129x/armv8/*.tar*
             bin/targets/rtd129x/armv8/sha256sums
