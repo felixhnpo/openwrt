@@ -5,6 +5,7 @@
 define Device/rtd1296
   SOC := rtd1296
   KERNEL_LOADADDR := 0x03000000
+  IMAGE_SIZE := 524288k
 endef
 
 ### EasePi ARS2 ###
