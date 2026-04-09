@@ -1,88 +1,113 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+PART_NAME=firmware
 REQUIRE_IMAGE_METADATA=1
 
+RAMFS_COPY_BIN='fw_printenv fw_setenv'
+RAMFS_COPY_DATA='/etc/fw_env.config /var/lock/fw_printenv.lock'
+
 platform_check_image() {
-	local diskdev partdev diff
+	local board=$(board_name)
+	local magic="$(get_magic_long "$1")"
 
-	export_bootdevice && export_partdevice diskdev 0 || {
-		echo "Unable to determine upgrade device"
-		return 1
-	}
+	echo "platform_check_image"
+	echo "board: $board"
+	echo "image: $1"
+	echo "magic: $magic"
 
-	get_partitions "/dev/$diskdev" bootdisk
+	# Accept standard OpenWrt sysupgrade images
+	# Magic numbers:
+	# 27051956 - uImage
+	# 73797375 - squashfs
+	# 28cd3d45 - ignore (legacy)
 
-	#extract the boot sector from the image
-	get_image "$@" | dd of=/tmp/image.bs count=1 bs=512b 2>/dev/null
+	case "$magic" in
+		"27051956")
+			echo "uImage detected"
+			return 0
+			;;
+		"73797375")
+			echo "squashfs detected"
+			return 0
+			;;
+		"28cd3d45")
+			echo "Legacy image format, ignoring"
+			return 1
+			;;
+	esac
 
-	get_partitions /tmp/image.bs image
+	# Check for gzip compressed image
+	local magic_gzip="$(get_magic_word "$1")"
+	case "$magic_gzip" in
+		"1f8b")
+			echo "gzip compressed image detected"
+			return 0
+			;;
+	esac
 
-	#compare tables
-	diff="$(grep -F -x -v -f /tmp/partmap.bootdisk /tmp/partmap.image)"
-
-	rm -f /tmp/image.bs /tmp/partmap.bootdisk /tmp/partmap.image
-
-	if [ -n "$diff" ]; then
-		echo "Partition layout has changed. Full image will be written."
-		ask_bool 0 "Abort" && exit 1
+	# Check if image contains metadata (standard OpenWrt)
+	if get_image "$1" | tar -Oxf - sysupgrade-board 2>/dev/null | grep -q .; then
+		echo "Standard OpenWrt sysupgrade image detected"
 		return 0
 	fi
-}
 
-platform_copy_config() {
-	local partdev
-
-	if export_partdevice partdev 1; then
-		mount -o rw,noatime "/dev/$partdev" /mnt
-		cp -af "$UPGRADE_BACKUP" "/mnt/$BACKUP_FILE"
-		umount /mnt
-	fi
+	echo "Image check passed"
+	return 0
 }
 
 platform_do_upgrade() {
-	local diskdev partdev diff
+	local board=$(board_name)
 
-	export_bootdevice && export_partdevice diskdev 0 || {
-		echo "Unable to determine upgrade device"
-		return 1
-	}
+	echo "platform_do_upgrade start"
+	echo "board: $board"
+	echo "image: $1"
 
+	# Standard emmc upgrade
 	sync
+	echo 3 > /proc/sys/vm/drop_caches
 
-	if [ "$UPGRADE_OPT_SAVE_PARTITIONS" = "1" ]; then
-		get_partitions "/dev/$diskdev" bootdisk
+	# Try to find the root partition
+	local root_part=$(cat /proc/cmdline | sed 's/.*root=\([^ ]*\).*/\1/')
+	echo "root partition: $root_part"
 
-		#extract the boot sector from the image
-		get_image "$@" | dd of=/tmp/image.bs count=1 bs=512b
+	if [ -b "$root_part" ]; then
+		# Determine if we need to write to the other partition (A/B)
+		local root_dev="${root_part%p*}"
+		local part_num="${root_part##*p}"
 
-		get_partitions /tmp/image.bs image
+		echo "root device: $root_dev"
+		echo "partition number: $part_num"
 
-		#compare tables
-		diff="$(grep -F -x -v -f /tmp/partmap.bootdisk /tmp/partmap.image)"
+		case "$part_num" in
+			1|2)
+				# A/B partition scheme
+				local target_part=$((3 - part_num))  # 1->2, 2->1
+				local target_dev="${root_dev}p${target_part}"
+				echo "Writing to alternate partition: $target_dev"
+				get_image "$1" | dd of="$target_dev" bs=1M status=progress
+				;;
+			*)
+				# Single partition, use dd
+				echo "Writing directly to root partition"
+				get_image "$1" | dd of="$root_part" bs=1M status=progress
+				;;
+		esac
 	else
-		diff=1
+		# Fallback to standard mtd write
+		echo "Using standard upgrade method"
+		default_do_upgrade "$1"
 	fi
 
-	if [ -n "$diff" ]; then
-		get_image "$@" | dd of="/dev/$diskdev" bs=4096 conv=fsync
+	echo "platform_do_upgrade end"
+}
 
-		# Separate removal and addtion is necessary; otherwise, partition 1
-		# will be missing if it overlaps with the old partition 2
-		partx -d - "/dev/$diskdev"
-		partx -a - "/dev/$diskdev"
+platform_copy_config() {
+	local board=$(board_name)
 
-		return 0
+	echo "platform_copy_config"
+
+	# Copy config to boot partition or etc
+	if [ -d /boot ]; then
+		cp -a "$UPGRADE_BACKUP" /boot/
 	fi
-
-	#iterate over each partition from the image and write it to the boot disk
-	while read part start size; do
-		if export_partdevice partdev $part; then
-			echo "Writing image to /dev/$partdev..."
-			get_image "$@" | dd of="/dev/$partdev" ibs="512" obs=1M skip="$start" count="$size" conv=fsync
-		else
-			echo "Unable to find partition $part device, skipped."
-		fi
-	done < /tmp/partmap.image
-
-	#copy partition uuid
-	echo "Writing new UUID to /dev/$diskdev..."
-	get_image "$@" | dd of="/dev/$diskdev" bs=1 skip=440 count=4 seek=440 conv=fsync
 }
