@@ -1,0 +1,20 @@
+#define CREATE_DATE " Jun 21 2024 "
+#define CREATE_TIME " 08:28:05 "
+#define BOOTTYPE " BOOTTYPE_COMPLETE "
+#define SSUWORKPART 0
+#define BOOTPART 0
+#define FW_RESCUE_DT " target=2140000 offset=630200 size=da9d type=bin name=rescue.emmc.dtb "
+#define FW_RESCUE_ROOTFS " target=30000000 offset=63de00 size=400000 type=bin name=rescue.root.emmc.cpio.gz_pad.img "
+#define FW_AKERNEL " target=1b00000 offset=a3de00 size=defb0 type=bin name=bluecore.audio "
+#define FW_KERNEL_DT " target=2100000 offset=b1ce00 size=bfbe type=bin name=rtd-129x.dtb "
+#define FW_KERNEL " target=3000000 offset=b28e00 size=d7d008 type=bin name=emmc.Image "
+#define FW_FWTBL " target=0 offset=620000 size=1f0 type=bin name=fw_tbl.bin "
+#define FW_CONFIG " target=0 offset=630000 size=120 type=bin name=gold_fw_tbl.bin "
+#define FW_GOLD_RESCUE_DT " target=2140000 offset=6000000 size=c75f type=bin name=rescue.dtb "
+#define FW_GOLD_ROOTFS " target=2200000 offset=600c800 size=9ca5a4 type=bin name=rescue.cpio.gz "
+#define FW_GOLD_AKERNEL " target=1b00000 offset=69d6e00 size=defb0 type=bin name=rescue.audio "
+#define FW_GOLD_KERNEL " target=3000000 offset=6ab5e00 size=9612e0 type=bin name=rescue.Image "
+#define PART0 " offset=8000000 size=8000000 mount_point=/ mount_dev=/dev/block/mmcblk0p1 filesystem=squashfs partname=rootfs type=img name=rootfs.bin "
+#define PART1 " offset=10000000 size=1b8000000 mount_point=etc mount_dev=/dev/block/mmcblk0p2 filesystem=ext4 partname=etc type=bin name=etc.bin "
+#define MBR0 " offset=0 size=200 name=mbr.bin "
+#define TAG 45
