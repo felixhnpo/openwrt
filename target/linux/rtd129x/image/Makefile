@@ -12,6 +12,8 @@ define Build/install-img
 	mkdir -p $(KDIR)/install-output
 	cp $(IMAGE_KERNEL) $(KDIR)/install-output/emmc.Image
 	cp $(IMAGE_ROOTFS) $(KDIR)/install-output/rootfs.bin
+	# Copy and rename DTB file (pack.sh expects rtd-129x.dtb)
+	cp $(KDIR)/image-$(firstword $(DEVICE_DTS)).dtb $(KDIR)/install-output/rtd-129x.dtb
 	$(TOPDIR)/target/linux/rtd129x/image/install-kit/pack.sh $(KDIR)/install-output
 	mv $(KDIR)/install-output/install.img $@
 endef
