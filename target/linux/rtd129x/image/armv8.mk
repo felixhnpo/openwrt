@@ -14,6 +14,7 @@ define Device/linkease_easepi-ars2
   DEVICE_VENDOR := LinkEase
   DEVICE_MODEL := EasePi ARS2
   DEVICE_VARIANT := ars2
+  SUPPORTED_DEVICES += linkease,easepi-ars2 realtek,rtd-1296
   DEVICE_PACKAGES := \
       kmod-r8169 \
       blkid \
