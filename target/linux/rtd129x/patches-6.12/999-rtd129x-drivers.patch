@@ -5,3 +5,10 @@
  obj-$(CONFIG_R8169) += r8169.o
  obj-$(CONFIG_RTASE) += rtase/
 +obj-$(CONFIG_R8169SOC) += r8169soc.o
+--- a/drivers/gpio/Makefile
++++ b/drivers/gpio/Makefile
+@@ -221,3 +221,4 @@ obj-$(CONFIG_GPIO_ZYNQMP_MODEPIN)	+= gpio-zynqmp-modepin.o
+ obj-$(CONFIG_GPIO_ZYNQ)			+= gpio-zynq.o
+ obj-$(CONFIG_GPIO_ZEVIO)		+= gpio-zevio.o
+ obj-$(CONFIG_GPIO_XGENE)		+= gpio-xgene.o
++obj-$(CONFIG_GPIO_RTD129x)		+= gpio-rtd129x.o
