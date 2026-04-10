@@ -8,7 +8,7 @@ define KernelPackage/r8169soc
   SUBMENU:=$(RTD129X_MENU)
   TITLE:=Realtek RTD129x SoC Gigabit Ethernet driver
   DEPENDS:=@TARGET_rtd129x +kmod-phylib
-  KCONFIG:=CONFIG_R8169SOC=y
+  KCONFIG:=CONFIG_R8169SOC
   FILES:=$(LINUX_DIR)/drivers/net/ethernet/realtek/r8169soc.ko
   AUTOLOAD:=$(call AutoProbe,r8169soc)
 endef
@@ -23,7 +23,7 @@ define KernelPackage/gpio-rtd129x
   SUBMENU:=$(RTD129X_MENU)
   TITLE:=Realtek RTD129x GPIO driver
   DEPENDS:=@TARGET_rtd129x +kmod-gpio
-  KCONFIG:=CONFIG_GPIO_RTD129x=y
+  KCONFIG:=CONFIG_GPIO_RTD129x
   FILES:=$(LINUX_DIR)/drivers/gpio/gpio-rtd129x.ko
   AUTOLOAD:=$(call AutoProbe,gpio-rtd129x)
 endef

@@ -1,0 +1,55 @@
+--- a/drivers/net/ethernet/realtek/Kconfig
++++ b/drivers/net/ethernet/realtek/Kconfig
+@@ -132,4 +132,16 @@ config R8169_LEDS
+ 	  Optional support for controlling the NIC LED's with the netdev
+ 	  LED trigger.
+ 
++config R8169SOC
++	tristate "Realtek RTD129x SoC Gigabit Ethernet driver"
++	depends on ARCH_RTD129X || COMPILE_TEST
++	select PHYLIB
++	help
++	  This driver supports the integrated Gigabit Ethernet controller
++	  found in Realtek RTD129x SoCs (RTD1294, RTD1295, RTD1296).
++
++	  To compile this driver as a module, choose M here. The module
++	  will be called r8169soc.
++
++	  If unsure, say N.
++
+ endif # NET_VENDOR_REALTEK
+--- a/drivers/net/ethernet/realtek/Makefile
++++ b/drivers/net/ethernet/realtek/Makefile
+@@ -8,3 +8,4 @@ obj-$(CONFIG_8139TOO) += 8139too.o
+ obj-$(CONFIG_ATP) += atp.o
+ obj-$(CONFIG_R8169) += r8169.o
+ r8169-objs := r8169_main.o r8169_firmware.o r8169_phy_config.o
++obj-$(CONFIG_R8169SOC) += r8169soc.o
+--- a/drivers/gpio/Kconfig
++++ b/drivers/gpio/Kconfig
+@@ -558,6 +558,15 @@ config GPIO_RDC321X
+ 	  Support for the RDC R-321x SoC GPIOs over southbridge
+ 	  PCI configuration space.
+ 
++config GPIO_RTD129x
++	tristate "Realtek RTD129x GPIO support"
++	depends on ARCH_RTD129X || COMPILE_TEST
++	select GPIOLIB
++	help
++	  This driver supports the GPIO controller found in Realtek RTD129x SoCs.
++
++	  If unsure, say N.
++
+ comment "SPI GPIO expanders"
+ 
+ config GPIO_MAX3191X
+--- a/drivers/gpio/Makefile
++++ b/drivers/gpio/Makefile
+@@ -130,6 +130,7 @@ obj-$(CONFIG_GPIO_RC5T583)		+= gpio-rc5t583.o
+ obj-$(CONFIG_GPIO_RDC321X)		+= gpio-rdc321x.o
+ obj-$(CONFIG_GPIO_REALTEK_OTTO)		+= gpio-realtek-otto.o
+ obj-$(CONFIG_GPIO_REG)			+= gpio-reg.o
++obj-$(CONFIG_GPIO_RTD129x)		+= gpio-rtd129x.o
+ obj-$(CONFIG_GPIO_SAMA5D2_PIOBU)	+= gpio-sama5d2-piobu.o
+ obj-$(CONFIG_GPIO_SCH)			+= gpio-sch.o
+ obj-$(CONFIG_GPIO_SCH311X)		+= gpio-sch311x.o
