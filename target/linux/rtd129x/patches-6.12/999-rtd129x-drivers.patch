@@ -1,6 +1,6 @@
 --- a/drivers/net/ethernet/realtek/Kconfig
 +++ b/drivers/net/ethernet/realtek/Kconfig
-@@ -132,6 +132,18 @@ config R8169_LEDS
+@@ -114,6 +114,18 @@ config R8169_LEDS
  	  Optional support for controlling the NIC LED's with the netdev
  	  LED trigger.
  
@@ -19,18 +19,19 @@
 +
  endif # NET_VENDOR_REALTEK
  
- config R8125
+ config RTASE
 --- a/drivers/net/ethernet/realtek/Makefile
 +++ b/drivers/net/ethernet/realtek/Makefile
-@@ -8,3 +8,4 @@ obj-$(CONFIG_8139TOO) += 8139too.o
- obj-$(CONFIG_ATP) += atp.o
+@@ -9,3 +9,4 @@ obj-$(CONFIG_8139TOO) += 8139too.o
+ r8169-y += r8169_main.o r8169_firmware.o r8169_phy_config.o
+ r8169-$(CONFIG_R8169_LEDS) += r8169_leds.o
  obj-$(CONFIG_R8169) += r8169.o
- r8169-objs := r8169_main.o r8169_firmware.o r8169_phy_config.o
 +obj-$(CONFIG_R8169SOC) += r8169soc.o
+ obj-$(CONFIG_RTASE) += rtase/
 --- a/drivers/gpio/Kconfig
 +++ b/drivers/gpio/Kconfig
-@@ -558,6 +558,15 @@ config GPIO_RDC321X
- 	  Support for the RDC R-321x SoC GPIOs over southbridge
+@@ -557,6 +557,15 @@ config GPIO_RDC321X
+ 	  Support for the RDC R321x SoC GPIOs over southbridge
  	  PCI configuration space.
  
 +config GPIO_RTD129x
@@ -42,12 +43,12 @@
 +
 +	  If unsure, say N.
 +
- comment "SPI GPIO expanders"
- 
- config GPIO_MAX3191X
+ config GPIO_SODAVILLE
+ 	bool "Intel Sodaville GPIO support"
+ 	depends on X86 && OF
 --- a/drivers/gpio/Makefile
 +++ b/drivers/gpio/Makefile
-@@ -130,6 +130,7 @@ obj-$(CONFIG_GPIO_RC5T583)		+= gpio-rc5t583.o
+@@ -129,6 +129,7 @@ obj-$(CONFIG_GPIO_RC5T583)		+= gpio-rc5t583.o
  obj-$(CONFIG_GPIO_RDC321X)		+= gpio-rdc321x.o
  obj-$(CONFIG_GPIO_REALTEK_OTTO)		+= gpio-realtek-otto.o
  obj-$(CONFIG_GPIO_REG)			+= gpio-reg.o
