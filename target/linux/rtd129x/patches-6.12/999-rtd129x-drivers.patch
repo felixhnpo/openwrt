@@ -1,10 +1,8 @@
 --- a/drivers/net/ethernet/realtek/Kconfig
 +++ b/drivers/net/ethernet/realtek/Kconfig
-@@ -118,6 +118,18 @@ config R8169_LEDS
- 	help
- 	  Optional support for controlling the NIC LED's with the netdev
+@@ -120,6 +120,18 @@ config R8169_LEDS
  	  LED trigger.
-
+ 
 +config R8169SOC
 +	tristate "Realtek RTD129x SoC Gigabit Ethernet driver"
 +	depends on ARCH_RTD129X || COMPILE_TEST
@@ -18,23 +16,24 @@
 +
 +	  If unsure, say N.
 +
+ endif # NET_VENDOR_REALTEK
+ 
  config RTASE
- 	tristate "Realtek Automotive Switch 9054/9068/9072/9075/9068/9071 PCIe Interface support"
- 	depends on PCI
 --- a/drivers/net/ethernet/realtek/Makefile
 +++ b/drivers/net/ethernet/realtek/Makefile
-@@ -10,4 +10,5 @@ r8169-y += r8169_main.o r8169_firmware.o r8169_phy_config.o
+@@ -10,3 +10,4 @@ r8169-y += r8169_main.o r8169_firmware.o r8169_phy_config.o
  r8169-$(CONFIG_R8169_LEDS) += r8169_leds.o
  obj-$(CONFIG_R8169) += r8169.o
 +obj-$(CONFIG_R8169SOC) += r8169soc.o
  obj-$(CONFIG_RTASE) += rtase/
 --- a/drivers/gpio/Kconfig
 +++ b/drivers/gpio/Kconfig
-@@ -1883,6 +1883,15 @@ config GPIO_RDC321X
+@@ -1884,6 +1884,15 @@ config GPIO_RDC321X
+ 	select MFD_RDC321X
  	help
  	  Support for the RDC R321x SoC GPIOs over southbridge
  	  PCI configuration space.
-
+ 
 +config GPIO_RTD129x
 +	tristate "Realtek RTD129x GPIO support"
 +	depends on ARCH_RTD129X || COMPILE_TEST
