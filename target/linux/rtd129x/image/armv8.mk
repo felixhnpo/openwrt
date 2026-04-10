@@ -16,7 +16,11 @@ define Device/linkease_easepi-ars2
   DEVICE_VARIANT := ars2
   SUPPORTED_DEVICES += linkease,easepi-ars2 realtek,rtd-1296
   DEVICE_PACKAGES := \
-      kmod-r8169 \
+      kmod-r8169soc \
+      kmod-gpio-rtd129x \
+      kmod-leds-gpio \
+      kmod-input-gpio-keys \
+      kmod-gpio-button-hotplug \
       blkid \
       blockdev
 endef

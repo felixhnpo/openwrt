@@ -5,6 +5,7 @@
 #include <dt-bindings/input/input.h>
 #include <dt-bindings/interrupt-controller/irq.h>
 #include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/leds/common.h>
 
 / {
 	compatible = "linkease,easepi-ars2", "realtek,rtd1296";
@@ -15,6 +16,7 @@
 
 	chosen {
 		stdout-path = "serial0:115200n8";
+		default-ip = "192.168.88.100";
 	};
 
 	memory@0 {
@@ -116,7 +118,7 @@
 
 	/* USB 2.0 Host */
 	usb@9a00000 {
-		compatible = "realtek,rtd1296-xhci";
+		compatible = "generic-xhci";
 		reg = <0x0 0x9a00000 0x0 0x10000>;
 		interrupts = <GIC_SPI 61 IRQ_TYPE_LEVEL_HIGH>;
 		status = "okay";
@@ -124,69 +126,103 @@
 
 	/* USB 3.0 Host */
 	usb@9b00000 {
-		compatible = "realtek,rtd1296-xhci";
+		compatible = "generic-xhci";
 		reg = <0x0 0x9b00000 0x0 0x10000>;
 		interrupts = <GIC_SPI 62 IRQ_TYPE_LEVEL_HIGH>;
 		status = "okay";
 	};
 
 	/* eMMC */
-	mmc@9b0000 {
-		compatible = "realtek,rtd1296-dwmshc";
-		reg = <0x0 0x9b0000 0x0 0x8000>;
+	mmc@98012000 {
+		compatible = "realtek,rtd1296-emmc";
+		reg = <0x0 0x98012000 0x0 0x8000>;
 		interrupts = <GIC_SPI 57 IRQ_TYPE_LEVEL_HIGH>;
 		status = "okay";
 	};
 
 	/* SD Card */
-	sd0: sd@9c0000 {
-		compatible = "realtek,rtd1296-dwmshc";
-		reg = <0x0 0x9c0000 0x0 0x8000>;
+	sd0: sd@98013000 {
+		compatible = "realtek,rtd1296-sdmmc";
+		reg = <0x0 0x98013000 0x0 0x8000>;
 		interrupts = <GIC_SPI 56 IRQ_TYPE_LEVEL_HIGH>;
-		status = "okay";
-	};
-
-	/* PCIe */
-	pcie@9a000000 {
-		compatible = "realtek,rtd1296-pcie";
-		reg = <0x0 0x9a000000 0x0 0x800000>,
-		      <0x0 0x1c000000 0x0 0x400000>;
-		interrupts = <GIC_SPI 59 IRQ_TYPE_LEVEL_HIGH>;
-		#address-cells = <3>;
-		#size-cells = <2>;
-		device_type = "pci";
-		status = "okay";
-	};
-
-	/* GMAC (Ethernet) */
-	gmac: ethernet@9d00000 {
-		compatible = "realtek,rtd1296-gmac";
-		reg = <0x0 0x9d00000 0x0 0x10000>;
-		interrupts = <GIC_SPI 58 IRQ_TYPE_LEVEL_HIGH>;
-		status = "okay";
+		status = "disabled";
 	};
 
 	/* SATA */
 	sata@9d10000 {
-		compatible = "realtek,rtd1296-ahci";
+		compatible = "generic-ahci";
 		reg = <0x0 0x9d10000 0x0 0x10000>;
 		interrupts = <GIC_SPI 60 IRQ_TYPE_LEVEL_HIGH>;
 		status = "okay";
 	};
 
-	/* GPIO */
-	gpio-controller@98030000 {
-		compatible = "realtek,rtd1296-gpio";
-		reg = <0x0 0x98030000 0x0 0x1000>;
-		gpio-controller;
-		#gpio-cells = <2>;
+	/* GMAC (Ethernet) */
+	gmac: ethernet@98016000 {
+		compatible = "Realtek,r8168";
+		reg = <0x0 0x98016000 0x0 0x1000>,
+		      <0x0 0x98007000 0x0 0x1000>;
+		interrupts = <GIC_SPI 22 IRQ_TYPE_LEVEL_HIGH>;
+		rtl-config = <1>;
+		mac-version = <42>;
+		rtl-features = <2>;
+		output-mode = <0>;
+		status = "okay";
 	};
 
-	/* HDMI TX */
-	hdmitex@9c00000 {
-		compatible = "realtek,rtd1296-hdmi";
-		reg = <0x0 0x9c00000 0x0 0x40000>;
-		interrupts = <GIC_SPI 55 IRQ_TYPE_LEVEL_HIGH>;
+	/* MISC GPIO */
+	rtk_misc_gpio: gpio@9801b100 {
+		compatible = "realtek,rtk-misc-gpio-irq-mux";
+		gpio-controller;
+		#gpio-cells = <3>;
+		#interrupt-cells = <1>;
+		interrupt-controller;
+		reg = <0x0 0x9801b000 0x0 0x100>,
+		      <0x0 0x9801b100 0x0 0x100>;
+		ngpios = <101>;
 		status = "okay";
+	};
+
+	/* ISO GPIO */
+	rtk_iso_gpio: gpio@98007100 {
+		compatible = "realtek,rtk-iso-gpio-irq-mux";
+		gpio-controller;
+		#gpio-cells = <3>;
+		#interrupt-cells = <1>;
+		interrupt-controller;
+		reg = <0x0 0x98007000 0x0 0x100>,
+		      <0x0 0x98007100 0x0 0x100>;
+		ngpios = <35>;
+		status = "okay";
+	};
+
+	/* LEDs */
+	leds {
+		compatible = "gpio-leds";
+
+		led-power {
+			label = "ars2:power";
+			gpios = <&rtk_misc_gpio 47 GPIO_ACTIVE_LOW>;
+			default-state = "on";
+			linux,default-trigger = "default-on";
+		};
+
+		led-system {
+			label = "ars2:system";
+			gpios = <&rtk_misc_gpio 48 GPIO_ACTIVE_LOW>;
+			default-state = "off";
+			linux,default-trigger = "heartbeat";
+		};
+	};
+
+	/* Buttons */
+	gpio-keys {
+		compatible = "gpio-keys";
+
+		reset {
+			label = "reset";
+			gpios = <&rtk_misc_gpio 8 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_RESTART>;
+			debounce-interval = <50>;
+		};
 	};
 };
