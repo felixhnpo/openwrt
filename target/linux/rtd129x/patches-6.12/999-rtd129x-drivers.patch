@@ -1,16 +1,8 @@
 --- a/drivers/net/ethernet/realtek/Makefile
 +++ b/drivers/net/ethernet/realtek/Makefile
-@@ -12,3 +12,4 @@ obj-$(CONFIG_R8169) += r8169.o
- r8169-$(CONFIG_R8169_LEDS) += r8169_leds.o
- obj-$(CONFIG_RTASE) += rtase/
+@@ -13,0 +14,1 @@ obj-$(CONFIG_RTASE) += rtase/
 +obj-$(CONFIG_R8169SOC) += r8169soc.o
 --- a/drivers/gpio/Makefile
 +++ b/drivers/gpio/Makefile
-@@ -133,6 +133,7 @@ obj-$(CONFIG_GPIO_REG)			+= gpio-reg.o
- obj-$(CONFIG_GPIO_SAMA5D2_PIOBU)	+= gpio-sama5d2-piobu.o
- obj-$(CONFIG_GPIO_SCH)			+= gpio-sch.o
- obj-$(CONFIG_GPIO_SCH311X)		+= gpio-sch311x.o
+@@ -224,0 +225,1 @@ obj-$(CONFIG_GPIO_ZYNQMP_MODEPIN)	+= gpio-zynqmp-modepin.o
 +obj-$(CONFIG_GPIO_RTD129x)		+= gpio-rtd129x.o
- obj-$(CONFIG_GPIO_SIFIVE)		+= gpio-sifive.o
- obj-$(CONFIG_GPIO_SIM)			+= gpio-sim.o
- obj-$(CONFIG_GPIO_STMPE)		+= gpio-stmpe.o
